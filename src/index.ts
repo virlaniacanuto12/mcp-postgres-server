@@ -27,7 +27,7 @@ function createServer() {
     tools: [
       {
         name: "list_tables",
-        description: "Lista todas as tabelas do esquema público do PostgreSQL com as respectivas colunas.",
+        description: "Lista todas as tabelas do banco (todos os schemas, exceto os do sistema) com as respectivas colunas.",
         inputSchema: { type: "object", properties: {} }
       },
       {
@@ -49,10 +49,10 @@ function createServer() {
 
     if (name === "list_tables") {
       const res = await pool.query(`
-        SELECT table_name, column_name, data_type
+        SELECT table_schema, table_name, column_name, data_type
         FROM information_schema.columns
-        WHERE table_schema = 'public'
-        ORDER BY table_name, ordinal_position;
+        WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
+        ORDER BY table_schema, table_name, ordinal_position;
       `);
       return { content: [{ type: "text", text: JSON.stringify(res.rows, null, 2) }] };
     }
